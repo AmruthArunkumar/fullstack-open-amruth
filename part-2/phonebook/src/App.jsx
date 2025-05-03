@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment } from "react";
 import axios from "axios";
 import phonebookService from "./services/phonebook";
+import Notification from "./components/Notification";
 
 const Filter = ({ setSearch }) => {
     return (
@@ -35,12 +36,9 @@ const Persons = ({ persons, newSearch, handleDelete }) => {
             {persons
                 .filter((p) => p.name.toLowerCase().includes(newSearch.toLowerCase()))
                 .map((e) => (
-                    <Fragment key={e.id}>
-                        <div key={e.id}>
-                            {e.name} {e.number}
-                        </div>
-                        <button onClick={() => handleDelete(e.id, e.name)}>delete</button>
-                    </Fragment>
+                    <div key={e.id}>
+                        {e.name} {e.number} <button onClick={() => handleDelete(e.id, e.name)}>delete</button>
+                    </div>
                 ))}
         </div>
     );
@@ -51,6 +49,8 @@ const App = () => {
     const [newSearch, setSearch] = useState("");
     const [newName, setNewName] = useState("");
     const [newNumber, setNewNumber] = useState("");
+    const [Message, setMessage] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(true);
 
     useEffect(() => {
         phonebookService.getAll().then((response) => {
@@ -60,9 +60,20 @@ const App = () => {
 
     const handleDelete = (id, name) => {
         if (window.confirm(`Delete ${name}?`)) {
-            phonebookService.remove(id).then((_) => {
-                setPersons(persons.filter((p) => p.id !== id));
-            });
+            phonebookService
+                .remove(id)
+                .then((_) => {
+                    setPersons(persons.filter((p) => p.id !== id));
+                })
+                .catch((error) => {
+                    setIsSuccess(false);
+                    setMessage(`${name} was already removed from server`);
+                    setTimeout(() => {
+                        setMessage(null);
+                        setIsSuccess(true);
+                    }, 3000);
+                    setPersons(persons.filter((p) => p.id !== id));
+                });
         }
     };
 
@@ -76,15 +87,30 @@ const App = () => {
         const found = persons.find((p) => p.name == newName);
         if (found) {
             if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-                phonebookService.update(found.id, { ...found, number: newNumber });
-                setPersons(persons.map((p) => p.id == found.id ? { ...found, number: newNumber } : p))
+                phonebookService.update(found.id, { ...found, number: newNumber }).catch((error) => {
+                    setIsSuccess(false);
+                    setMessage(`${found.name} was already removed from server`);
+                    setTimeout(() => {
+                        setMessage(null);
+                        setIsSuccess(true);
+                    }, 3000);
+                    setPersons(persons.filter((p) => p.id !== id));
+                });
+                setPersons(persons.map((p) => (p.id == found.id ? { ...found, number: newNumber } : p)));
+                setMessage(`Modified ${found.name}`);
+                setTimeout(() => {
+                    setMessage(null);
+                }, 3000);
             }
         } else {
             phonebookService.create(nameObject).then((r) => {
-                console.log(r);
                 setPersons(persons.concat(r));
                 setNewName("");
                 setNewNumber("");
+                setMessage(`Added ${r.name}`);
+                setTimeout(() => {
+                    setMessage(null);
+                }, 3000);
             });
         }
     };
@@ -92,6 +118,7 @@ const App = () => {
     return (
         <div>
             <h2>Phonebook</h2>
+            <Notification message={Message} type={isSuccess ? "success" : "failure"} />
             <Filter setSearch={setSearch} />
             <h2>add a new</h2>
             <PersonForm
