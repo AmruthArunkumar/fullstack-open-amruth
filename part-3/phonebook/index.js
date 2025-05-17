@@ -33,6 +33,11 @@ data = [
         name: "Mary Poppendieck",
         number: "39-23-6423122",
     },
+    {
+        id: "5",
+        name: "Sir Pikamon",
+        number: "0123456789",
+    },
 ];
 
 app.get("/api/persons", (request, response) => {
@@ -85,7 +90,7 @@ app.get("/info", (request, response) => {
     `);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
