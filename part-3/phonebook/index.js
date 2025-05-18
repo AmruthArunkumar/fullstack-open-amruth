@@ -57,7 +57,7 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id;
-    data = data.filter((d) => d.id !== id);
+    data = data.filter((d) => d.id != id);
     response.status(204).end();
 });
 
