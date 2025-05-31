@@ -103,15 +103,25 @@ const App = () => {
                 }, 3000);
             }
         } else {
-            phonebookService.create(nameObject).then((r) => {
-                setPersons(persons.concat(r));
-                setNewName("");
-                setNewNumber("");
-                setMessage(`Added ${r.name}`);
-                setTimeout(() => {
-                    setMessage(null);
-                }, 3000);
-            });
+            phonebookService
+                .create(nameObject)
+                .then((r) => {
+                    setPersons(persons.concat(r));
+                    setNewName("");
+                    setNewNumber("");
+                    setMessage(`Added ${r.name}`);
+                    setTimeout(() => {
+                        setMessage(null);
+                    }, 3000);
+                })
+                .catch((error) => {
+                    setIsSuccess(false);
+                    setMessage(`${error.response.data.error}`);
+                    setTimeout(() => {
+                        setMessage(null);
+                        setIsSuccess(true);
+                    }, 3000);
+                });
         }
     };
 
