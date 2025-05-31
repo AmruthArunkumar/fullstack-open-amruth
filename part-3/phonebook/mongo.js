@@ -22,7 +22,7 @@ const personSchema = new mongoose.Schema({
 
 const Person = mongoose.model("Person", personSchema);
 
-if (mode == "add") {
+if (mode === "add") {
     const name = process.argv[3];
     const number = process.argv[4];
 
